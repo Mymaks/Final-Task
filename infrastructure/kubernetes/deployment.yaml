@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: server-go
+  namespace: default
+  labels:
+    app: server-go
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: server-go
+  template:
+    metadata:
+      labels:
+        app: server-go
+    spec:
+      containers:
+      - name: server-go
+        image: mymaks/final-task:server-go
+        ports:
+        - name: http
+          containerPort: 80
+        imagePullPolicy: IfNotPresent

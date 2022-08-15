@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: server-go
+  namespace: default
+  labels:
+    app: server-go
+spec:
+  selector:
+    app: server-go
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
