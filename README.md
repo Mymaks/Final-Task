@@ -1,50 +1,59 @@
-# DevOps Technical Task
+1. Create AWS User (IAM):
+- Under your AWS account go to the Identity and Access Management (IAM)-> Access management -> Users
+- push "Add user" button and following instrustion set new user (attach existing policy - AdministratorAccess).
 
- All infrastructure components advised to be represented as code, and provisioning of resources should be automated as much as possible.
+- Login to AWS via new user.
 
-Will be tested your ability to implement modern automated infrastructure, as well as general knowledge of system administration and coding. In your solution you should emphasize readability, maintainability and DevOps methodologies.
+- In user drop-down menu choose "Security credentials"
 
-To begin, create a GitHub repository and start adding your work. Commit often, I would rather see a history of trial and error than a single monolithic push. When you're finished, commit the URL to your repository to Google Classroom task.
+- Create new Accces Key and save it.
 
-You can use the following folder structure or create your own:
+- Before to start infrastructure deployment log in into AWS account from terminal using following comands:
+  ~ export AWS_ACCESS_KEY_ID=Your_Access_Key_ID
+  ~ export AWS_SECRET_ACCESS_KEY= Your_Secret_Access_Key
 
-```
-./
-├─ 1_infrastructure
-│  └─ <your project>
-└─ 2_application
-   └─ <your project>
-```
+2. Infrastructure deplyoment (EKS Cluster + VPC).
+- From GitHub CLI clone repository with project:
+  ~ gh repo clone Mymaks/Final-Task
 
-## 1. Infrastructure Test
+- go to ther terraform directory:
+  ~ cd Final-Task/infrastructure/terraform
 
-Build out some basic Infrastructure in AWS or GCP to deploy [Golang server](app/server.go) that can be used in a repeatable way. 
-Bonus points for the following:
+- execute comands for infrastructure deployment:
+~ terraform inint
+~ terrafrom apply
 
-* Use of Terraform.
-* Use of Kubernetes.
-* Clearly explaining why you're doing things a certain way.
-* Providing a PNG diagram of your infrastructure.
+- connect to the EKS Cluster and check it is connected:
+  ~ aws eks --region eu-west-1 update-kubeconfig --name my-cluster
+  ~ kubectl get svc
 
-## 2.1 Application (CI/CD)
+3. Application deployment
+- Move to the kubernetes folder:
+  ~ cd .. && cd kubernetes
 
-Use a tool of your choice such as Ansible, Bash, Chef, Puppet or similar to automate the docker build and deploy of the [Golang server](app/server.go) that serves some static or dynamic content. 
-Bonus points for the following:
+- Initiate app deployment:
+  ~ kubectl apply -f deployment.yaml # deploying application stored on docker hub from image.
+  ~ kubectl apply -f service.yaml #service allows you to access all replicas through a single IP address or name 
+  ~ kubectl apply -f loadbalancer.yaml # allows you to rich your application from outside.
 
-* Using Containers as part of your automation.
-* Creating a CI pipeline, using a tool of your choice, that deploys the web server to a cloud environment of your choice.
-* Serve traffic from 443 port with self-signed or public certificate would be highly appreciate.
+- Initiate port forwarding
+  ~ kubectl port-forward service/sever-go-loadbalancer 8080:8080
 
-## 2.2 Application (Coding)
+- Check external ip adress of running loadbalancer:
+  ~ kubectl get service/server-go-loadbalancer |  awk {'print $1" " $2 " " $4 " " $5'} | column -t
 
-Add a new handler in Golang application of your choice that does _something_ you'd normally end up having to do manually. 
-Some ideas:
+- Verify that you can access the load balancer externally by using expernal ip in browser
 
-* Backing up a file and sending the output to a cloud storage solution(S3).
-* A basic API to provide you with some useful information.
-* Some healthcheck endpoint to check application status.
-* Getting some information back from an external source and presenting it to the end user.
+- Check logs to see that application is up and running correctly:
+  ~ kubectl logs deployment/server-go
 
-Bonus points:
+4. Delete all resources.
+- delete loadbalancer, services, deployment:
+~ kubectl delete servece/server-go-loadbalancer
+~ kubectl delete servece/server-go
+~ kubectl delete deployment/server-go
 
-* Generate and run a test of application to prevent deploy some errors in your environment.
+- delete EKS Cluster + VPC:
+~ cd .. && cd terraform
+~ terraform destroy
+
