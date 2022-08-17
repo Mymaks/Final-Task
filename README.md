@@ -1,4 +1,4 @@
-1. Create AWS User (IAM):
+1. Create AWS User (IAM)  :
 - Under your AWS account go to the Identity and Access Management (IAM)-> Access management -> Users
 - push "Add user" button and following instrustion set new user (attach existing policy - AdministratorAccess).
 
